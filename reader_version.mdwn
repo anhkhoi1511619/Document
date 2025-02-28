@@ -1,0 +1,128 @@
+### シーケンス図
+
+#### 乗降リーダバージョン更新機能
+```plantuml
+@startuml
+
+actor "乗務員" as p
+box " バージョン通知"
+database AWS as aws
+participant 制御器 as c
+end box
+
+box "内部データベース"
+database MasterVersion.csv as m_ver_f
+database AppVersion.csv    as a_ver_f
+end box
+
+participant 乗降リーダ as r
+
+
+note over c,r:電源ON
+c-->c : アプリ起動処理
+activate c #FFBBBB
+
+c --> aws:マスタバージョン確認API
+c <-- aws:マスタバージョン確認API RES\n  マスタVer確認結果連携
+alt マスタ更新ありの場合
+    c <-- aws:マスタダウンロード
+end
+
+c --> aws:アプリバージョン確認API
+c <-- aws:アプリバージョン確認API RES\n  アプリVer確認結果連携
+alt アプリ更新ありの場合
+    c <-- aws:アプリダウンロード
+end
+
+
+   alt マスタのファイル名更新ありの場合 
+    c --> c:展開する
+    c --> c:「/log/mast」へコピー（上書き）する
+    c --> m_ver_f: ダウンロードしたバージョンに更新する
+   end
+
+   alt アプリの ファイル名11+12名更新ありの場合
+    c --> c:展開する
+    c --> c:「/log/Server/download/app」へコピー（上書き）する
+    c --> a_ver_f: ダウンロードしたバージョンに更新する
+   end
+
+   alt#LightBlue #Gold 乗降リーダの ファイル名13+14+15更新ありの場合
+    c --> c:展開する
+    c --> a_ver_f !!: ダウンロードしたバージョンに更新しない
+   end
+
+
+c-->c : 展開したファイルを「log/ftp_root」へコピー（上書き）する。
+
+alt この時点から、FTPタイムアウトに関する不具合発生の場合
+    p--->c: 電源OFF、再起動
+    c-->c : アプリ起動処理
+    activate c #EEEEEE
+    c --> aws:バージョン確認API
+    note left
+        最新バージョン通知：マスタ、アプリ【11、12】
+        旧バージョン通知：乗降リーダ【13、14, 15】
+    endnote
+    c <-- aws:バージョン確認API RES\n  Ver確認結果連携
+    deactivate c
+end    
+c-->c : マネージャーアプリ更新処理。
+c-->c : システムアプリ更新処理。
+c-->c : サブ基盤更新処理。
+
+c-->c : 乗降リーダ更新処理。
+activate c #DarkSalmon
+c --> r : プログラム更新要求
+r --> c : 「プログラム更新要求RES
+c-->r:バージョン要求
+c<--r:バージョン要求RES
+deactivate c
+alt この時点から、乗降リーダ更新処理に関する不具合発生の場合
+    p--->c: 電源OFF、再起動
+     c-->c : アプリ起動処理
+    activate c #BBBBBB
+    c --> aws:バージョン確認API
+    note left
+        最新バージョン通知：マスタ、アプリ【11、12】
+        旧バージョン通知：乗降リーダ【13、14, 15】
+    endnote
+    c <-- aws:バージョン確認API RES\n  Ver確認結果連携
+    deactivate c
+end  
+
+alt インターネット接続の場合
+    c --> aws:マスタバージョン確認API
+    c <-- aws:マスタバージョン確認API RES\n  マスタVer確認結果連携
+    c --> aws:アプリバージョン確認API
+    c <-- aws:アプリバージョン確認API RES\n  アプリVer確認結果連携
+end
+
+c --> m_ver_f: バージョンに再度に更新する
+c --> a_ver_f: バージョンに再度に更新する
+
+
+deactivate c
+
+
+alt 通常に再起動の場合
+    p--->c: 電源OFF、通常に再起動
+    c-->c : アプリ起動処理
+    activate c #AAAAAA
+    c --> aws:マスタバージョン確認API
+    note left
+        最新バージョン
+    endnote
+    c <-- aws:マスタバージョン確認API RES\n  マスタVer確認結果連携
+
+    c --> aws:アプリバージョン確認API
+    note left
+        最新バージョン
+    endnote
+    c <-- aws:アプリバージョン確認API RES\n  アプリVer確認結果連携
+
+deactivate c
+end
+@enduml
+
+```

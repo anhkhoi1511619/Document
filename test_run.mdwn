@@ -1,0 +1,9 @@
+### シーケンス図
+```plantuml
+@startuml
+actor "乗務員" as p
+cloud "AWS Server" as aws
+
+@enduml
+
+```

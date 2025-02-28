@@ -1,0 +1,176 @@
+<h3 id="シーケンス図">シーケンス図</h3>
+<h4 id="乗降リーダ更新機能">乗降リーダ更新機能</h4>
+<img src="sequence-diagram.png" alt="Sequence Diagram">
+
+
+
+actor &quot;乗務員&quot; as p
+database AWS as aws
+
+participant 制御器 as c
+participant 乗降リーダ1 as r1
+participant 乗降リーダ2 as r2
+participant 乗降リーダ3 as r3
+participant 乗降リーダ4 as r4
+
+note over c,r4:電源ON
+
+c --&gt; aws:マスタバージョン確認API
+c &lt;-- aws:マスタバージョン確認API RES\n  マスタVer確認結果連携
+alt マスタ更新ありの場合
+    c &lt;-- aws:マスタダウンロード
+end
+
+c --&gt; aws:アプリバージョン確認API
+c &lt;-- aws:アプリバージョン確認API RES\n  アプリVer確認結果連携
+alt アプリ更新ありの場合
+    c &lt;-- aws:アプリダウンロード
+end
+
+c--&gt;r1:ステータス通知&amp;要求
+c&lt;--r1:ステータス通知&amp;要求RES\n IPL/APL=00h:IPL動作
+
+alt 乗降リーダ1がIPLの場合
+    c--&gt;r1:プログラム更新要求
+    c&lt;--r1:プログラム更新要求RES
+    c--&gt;r1:ステータス通知&amp;要求
+    c&lt;--r1:ステータス通知&amp;要求RES\n 注入=01h:更新ファイル取得中    
+
+    c --&gt; r1:更新ファイルダウンロード
+
+    note right
+        FTPにてLIVUから更新ファイルを
+        取得する
+    endnote
+
+
+    c--&gt;r1:ステータス通知&amp;要求
+    c&lt;--r1:ステータス通知&amp;要求RES\n 注入=02h:更新ファイル取得完了
+    note left
+        注入ステータスが下記の何れかに
+        なるまで待つ
+            00h:通常
+            02h:更新ファイル取得完了
+            10h:注入処理中
+    endnote
+end
+
+note over c,r4:制御対象の全乗降リーダに対して同じ処理を行う
+
+c--&gt;r2:ステータス通知&amp;要求
+c&lt;--r2:ステータス通知&amp;要求RES\n IPL/APL=00h:IPL動作
+
+alt 乗降リーダ2がIPLの場合
+    c--&gt;r2:プログラム更新要求
+    c&lt;--r2:プログラム更新要求RES
+
+    note over c,r2:以降、乗降リーダ1と同じ
+
+end
+
+c--&gt;r3:ステータス通知&amp;要求
+c&lt;--r3:ステータス通知&amp;要求RES\n IPL/APL=00h:IPL動作
+
+alt 乗降リーダ3がIPLの場合
+    c--&gt;r3:プログラム更新要求
+    c&lt;--r3:プログラム更新要求RES
+
+    note over c,r2:以降、乗降リーダ1と同じ
+
+end
+
+c--&gt;r4:ステータス通知&amp;要求
+c&lt;--r4:ステータス通知&amp;要求RES\n IPL/APL=00h:IPL動作
+
+alt 乗降リーダ4がIPLの場合
+    c--&gt;r4:プログラム更新要求
+    c&lt;--r4:プログラム更新要求RES
+
+    note over c,r2:以降、乗降リーダ1と同じ
+
+end
+
+alt 制御対象の全乗降リーダの注入ステータスが00h:通常になるのを待つ
+    c--&gt;r1:ステータス通知&amp;要求
+    c&lt;--r1:ステータス通知&amp;要求RES\n 注入=10h:注入処理中
+
+    c--&gt;r2:ステータス通知&amp;要求
+    c&lt;--r2:ステータス通知&amp;要求RES\n 注入=10h:注入処理中
+
+    c--&gt;r3:ステータス通知&amp;要求
+    c&lt;--r3:ステータス通知&amp;要求RES\n 注入=10h:注入処理中
+
+    c--&gt;r4:ステータス通知&amp;要求
+    c&lt;--r4:ステータス通知&amp;要求RES\n 注入=10h:注入処理中
+
+    c--&gt;r1:ステータス通知&amp;要求
+    c&lt;--r1:ステータス通知&amp;要求RES\n 注入=00h:通常
+
+    c--&gt;r2:ステータス通知&amp;要求
+    c&lt;--r2:ステータス通知&amp;要求RES\n 注入=00h:通常
+
+    c--&gt;r3:ステータス通知&amp;要求
+    c&lt;--r3:ステータス通知&amp;要求RES\n 注入=10h:注入処理中
+
+    c--&gt;r4:ステータス通知&amp;要求
+    c&lt;--r4:ステータス通知&amp;要求RES\n 注入=10h:注入処理中
+
+    c--&gt;r1:ステータス通知&amp;要求
+    c&lt;--r1:ステータス通知&amp;要求RES\n 注入=00h:通常
+
+    c--&gt;r2:ステータス通知&amp;要求
+    c&lt;--r2:ステータス通知&amp;要求RES\n 注入=00h:通常
+
+    c--&gt;r3:ステータス通知&amp;要求
+    c&lt;--r3:ステータス通知&amp;要求RES\n 注入=00h:通常
+
+    c--&gt;r4:ステータス通知&amp;要求
+    c&lt;--r4:ステータス通知&amp;要求RES\n 注入=00h:通常
+end
+
+alt 乗降リーダ1がIPLの場合
+    c--&gt;r1:APL移行要求
+    c&lt;--r1:APL移行要求RES
+    note left
+        一時的に通信が途切れる。
+    endnote
+end
+
+alt 乗降リーダ2がIPLの場合
+    c--&gt;r2:APL移行要求
+    c&lt;--r2:APL移行要求RES
+end
+
+alt 乗降リーダ3がIPLの場合
+    c--&gt;r3:APL移行要求
+    c&lt;--r3:APL移行要求RES
+end
+
+alt 乗降リーダ4がIPLの場合
+    c--&gt;r4:APL移行要求
+    c&lt;--r4:APL移行要求RES
+end
+
+note over c,r4:APL以降を要求した場合、5秒程度通信不能となるため、\n5秒以降にTCPを再接続し、通信を再開する。
+
+
+c--&gt;r1:バージョン要求
+c&lt;--r1:バージョン要求RES
+note left
+    バージョン情報を記憶しておく
+endnote
+
+c--&gt;r2:バージョン要求
+c&lt;--r2:バージョン要求RES
+
+c--&gt;r3:バージョン要求
+c&lt;--r3:バージョン要求RES
+
+c--&gt;r4:バージョン要求
+c&lt;--r4:バージョン要求RES
+
+note over c,r4:個々が完了するまで、タッチパネル操作盤の表示は「起動処理中」としておく。
+
+
+@enduml
+</code></pre>
