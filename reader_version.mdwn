@@ -47,7 +47,7 @@ end
     c --> a_ver_f: ダウンロードしたバージョンに更新する
    end
 
-   alt#LightBlue #Gold 乗降リーダの ファイル名13+14+15更新ありの場合
+   alt 乗降リーダの ファイル名13+14+15更新ありの場合
     c --> c:展開する
     c --> a_ver_f !!: ダウンロードしたバージョンに更新しない
    end
@@ -77,6 +77,10 @@ c --> r : プログラム更新要求
 r --> c : 「プログラム更新要求RES
 c-->r:バージョン要求
 c<--r:バージョン要求RES
+c -[#red]> a_ver_f : ダウンロードした乗降リーダのバージョンに 更新する
+    note left
+        修正
+    endnote
 deactivate c
 alt この時点から、乗降リーダ更新処理に関する不具合発生の場合
     p--->c: 電源OFF、再起動
@@ -97,10 +101,13 @@ alt インターネット接続の場合
     c --> aws:アプリバージョン確認API
     c <-- aws:アプリバージョン確認API RES\n  アプリVer確認結果連携
 end
-
-c --> m_ver_f: バージョンに再度に更新する
-c --> a_ver_f: バージョンに再度に更新する
-
+alt #LightBlue 展開に成功した場合のみ
+    c --> m_ver_f: バージョンに再度に更新する
+    c --> a_ver_f: バージョンに再度に更新する
+end
+    note left
+        修正
+    endnote
 
 deactivate c
 
