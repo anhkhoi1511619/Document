@@ -1,0 +1,102 @@
+
+```plantuml
+@startuml
+
+
+actor "乗務員" as p
+box "AndroidシステムのJavaで管理"
+    participant 制御器 as c
+    participant スレッド as t
+end box
+participant 乗降リーダ1 as r1
+participant 乗降リーダ2 as r2
+
+
+alt 通常
+    alt アプリ起動時の最初の送信
+        c->c:リーダ１との送信
+        activate c #FFBBBB
+        c-->t : 50スレッドを取得
+        t-->c : 50スレッドを保存
+        c-->r1:ステータス通知&要求
+        c<--r1:ステータス通知&要求RES
+        note left
+            スレッド数が 26～50 の場合、送信しません。
+        endnote  
+        deactivate c 
+
+        c->c:リーダ２との送信
+        activate c #FFBBBB
+        c-->t : 50スレッドを取得
+        t-->c : 50スレッドを保存
+        c-->r2:ステータス通知&要求
+        c<--r2:ステータス通知&要求RES
+        note left
+            スレッド数が 26～50 の場合、送信しません。
+        endnote  
+        deactivate c
+    end    
+
+    c->c:リーダ１との送信
+    activate c #FFBBBB  
+        c-->r1:ステータス通知&要求
+        c<--r1:ステータス通知&要求RES
+        note left
+            スレッド数が 26～50 の場合、送信しません。
+        endnote 
+    deactivate c
+
+    p-[#red]>c: ボタン押下（手動設定ボタンや精算結果など）
+    c-->c : リーダ１との送信
+    activate c #AAAAAA
+        c-->r1:接客表示&要求
+        c<--r1:接客表示&要求RES
+        note left
+            スレッド数が 26～50 の場合でも、必ず送信する。
+            ただし、スレッド数が 50 の場合は、反応しない可能性がある。
+        endnote
+    deactivate c
+
+    c->c:リーダ２との送信
+    activate c #FFBBBB  
+        c-->r2:ステータス通知&要求
+        c<--r2:ステータス通知&要求RES
+        note left
+            スレッド数が 26～50 の場合、送信しません。
+        endnote 
+    deactivate c
+
+end
+
+alt 反応しない不具合発生   
+
+    c->c:リーダ１との送信
+    activate c #FFBBBB  
+        note left
+            スレッド数が 26～50 使用されました。
+            ステータス通知&要求を送信しない。
+        endnote 
+    deactivate c
+
+    p-[#red]>c: ボタン押下（手動設定ボタンや精算結果など）
+    c-->c : リーダ１との送信
+    activate c #AAAAAA
+        c-->r1 !!:接客表示&要求
+        note left
+            スレッド数が 26～50 使用されました。
+            スレッド数が 50 の場合は、送信したのに、リーダにデータが届かない
+        endnote
+    deactivate c
+
+    c->c:リーダ２との送信
+    activate c #FFBBBB  
+        c-->r2:ステータス通知&要求
+        c<--r2:ステータス通知&要求RES
+    deactivate c
+
+end
+
+
+@enduml
+
+```
