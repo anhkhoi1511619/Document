@@ -29,19 +29,21 @@ public class ThreadRecovery {
         // Định kỳ kiểm tra trạng thái thread
         //executor.scheduleAtFixedRate(ThreadRecovery::checkThreadStatus, 0, 1, TimeUnit.SECONDS);
         // Định kỳ kiểm tra trạng thái thread
-        executor.scheduleAtFixedRate(ThreadRecovery::run, 0, 100, TimeUnit.MILLISECONDS);
+        run();
+        //executor.scheduleAtFixedRate(ThreadRecovery::run, 0, 100, TimeUnit.MILLISECONDS);
         
     }
     
     
     private static void checkThreadStatus() {
         StringBuilder statusLog = new StringBuilder("==== CHECK READER THREAD STATUS ====\n");
-        StringBuilder interruptedLog = new StringBuilder("==== THREADS REQUESTED FOR INTERRUPT ====\n");
+        //StringBuilder interruptedLog = new StringBuilder("==== THREADS REQUESTED FOR INTERRUPT ====\n");
     
         // Sắp xếp danh sách thread theo thứ tự Thread-1, Thread-2, ..., Thread-50
         List<Map.Entry<String, Thread>> sortedThreads = new ArrayList<>(threadMap.entrySet());
-        sortedThreads.sort(Comparator.comparing(entry -> Integer.parseInt(entry.getKey().replace("Thread-", ""))));
-    
+        sortedThreads.sort(Comparator.comparing(entry -> Integer.valueOf(entry.getKey().replace("Thread-", ""))));
+        
+        Thread reqInterruptedthread = null;
         for (Map.Entry<String, Thread> entry : sortedThreads) {
             String threadName = entry.getKey();
             Thread thread = entry.getValue();
@@ -50,9 +52,11 @@ public class ThreadRecovery {
             // Xử lý trạng thái
             if (state == Thread.State.BLOCKED) {
                 statusLog.append(String.format("[Thread-%s: BLOCKED], ", threadName.replace("Thread-", "")));
-                interruptedLog.append(String.format("[Thread-%s], ", threadName.replace("Thread-", ""))); // Ghi log riêng
-                thread.interrupt(); // Yêu cầu interrupt nhưng không xác nhận nó đã bị interrupt thành công
-            } else {
+                //interruptedLog.append(String.format("[Thread-%s], ", threadName.replace("Thread-", ""))); // Ghi log riêng
+                //thread.interrupt(); // Yêu cầu interrupt nhưng không xác nhận nó đã bị interrupt thành công
+                reqInterruptedthread = thread;
+            } 
+            else {
                 statusLog.append(String.format("[Thread-%s: %s], ", threadName.replace("Thread-", ""), state));
             }
         }
@@ -61,15 +65,17 @@ public class ThreadRecovery {
         System.out.println(statusLog.toString().replaceAll(", $", ""));
     
         // Nếu có thread bị BLOCKED và được yêu cầu interrupt, thì in dòng 2
-        if (interruptedLog.length() > "==== THREADS REQUESTED FOR INTERRUPT ====\n".length()) {
-            System.out.println(interruptedLog.toString().replaceAll(", $", ""));
+        if (reqInterruptedthread != null) {
+            System.out.println( reqInterruptedthread.getName()+" requested for INTERRUPT");
+            //System.out.println(String.format("[%s: %s], ", reqInterruptedthread.getName(), "BLOCKED"));
+            reqInterruptedthread.interrupt();
         }
     }
     
     private static void run() {
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < 100000; i++) {
             sendAsync(true, "192.168.254.45", 50001, true, 1);
-            sendAsync(true, "192.168.254.46", 50001, true, 1);
+            //sendAsync(true, "192.168.254.46", 50001, true, 1);
         }
     }
     
