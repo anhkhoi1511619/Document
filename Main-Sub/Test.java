@@ -9,7 +9,7 @@ public class Test {
         HashMap<String, Integer> bundle = new HashMap<>();
         bundle.put("stopSeq", 1);
         bundle.put("operationNum", 2);
-        Send send = factory.fill(10, 20, bundle);
+        Send send = factory.fill(20, 1, bundle);
 
         byte[] data = send.serialize();
         
@@ -22,9 +22,9 @@ public class Test {
         }
         System.out.println("Data is correctly "+(dto.isCorrectData() ? "YES" : "NO"));
 
-        bundle.put("stopSeq", 1);
-        bundle.put("operationNum", null);
-        send = factory.fill(10, 20, bundle);
+        bundle.put("stopSeq", 3);
+        bundle.put("operationNum", -1);
+        send = factory.fill(20, 2, bundle);
 
         data = send.serialize();
         
