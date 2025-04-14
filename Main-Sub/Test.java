@@ -4,14 +4,13 @@ import java.util.HashMap;
 public class Test {
     public static void main(String[] args) {
         System.err.println("Khoi");
-        var dto = new TrainCommPackageDTO();
-        MainFactory factory = new MainFactory();
-        HashMap<String, Integer> bundle = new HashMap<>();
+        byte[] data;
+        var dto = new CommPackageDTO();
+        var  factory = new MainFactory();
+        var bundle = new HashMap<>();
         bundle.put("stopSeq", 1);
         bundle.put("operationNum", 2);
-        Send send = factory.fill(20, 1, bundle);
-
-        byte[] data = send.serialize();
+        data = factory.fill(20, 1, bundle);
         
         System.out.println("Serialized: " + format(data));
 
@@ -24,9 +23,7 @@ public class Test {
 
         bundle.put("stopSeq", 3);
         bundle.put("operationNum", -1);
-        send = factory.fill(20, 2, bundle);
-
-        data = send.serialize();
+        data = factory.fill(20, 2, bundle);
         
         System.out.println("Serialized: " + format(data));
 

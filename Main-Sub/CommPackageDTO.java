@@ -3,8 +3,8 @@ import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 
 
-public class TrainCommPackageDTO implements Send {
-    static final String TAG = TrainCommPackageDTO.class.getSimpleName();
+public class CommPackageDTO {
+    static final String TAG = CommPackageDTO.class.getSimpleName();
     byte stx =  0x02;
     short dataSize;
     byte dataSizeSum;
@@ -65,7 +65,6 @@ public class TrainCommPackageDTO implements Send {
     }
     //End for Unit Test
 
-    @Override
     public byte[] serialize() {
         try {
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -91,7 +90,6 @@ public class TrainCommPackageDTO implements Send {
             return new byte[]{0};
         }
     }
-    @Override
     public void deserialize(byte[] ret) {
         if(ret.length<=0) return;
         int offset = 0;
@@ -122,11 +120,11 @@ public class TrainCommPackageDTO implements Send {
 
     public boolean isCorrectData() {
         if(stx != 0x02) {
-            //Log.e(TAG, "Can not parse due to STX incorrectly");
+            System.out.println( "Can not parse due to STX incorrectly");
             return false;
         }
         if(etx != 0x03) {
-            //Log.e(TAG, "Can not parse due to ETX incorrectly");
+            System.out.println( "Can not parse due to ETX incorrectly");
             return false;
         }
         byte[] dataBuffer = (data==null) ? new byte[]{} : data;
@@ -134,21 +132,21 @@ public class TrainCommPackageDTO implements Send {
         cmdSeqDataBuffer[0] = (byte) command;
         cmdSeqDataBuffer[1] = (byte) sequenceNum;
         System.arraycopy(dataBuffer, 0, cmdSeqDataBuffer, 2, dataBuffer.length);
-        //Log.d(TAG, "cmdSeqDataBuffer is prepared: "+Arrays.toString(cmdSeqDataBuffer));
-        //Log.d(TAG, "Size of cmdSeqDataBuffer: "+cmdSeqDataBuffer.length);
+        System.out.println( "cmdSeqDataBuffer is prepared: "+Arrays.toString(cmdSeqDataBuffer));
+        System.out.println( "Size of cmdSeqDataBuffer: "+cmdSeqDataBuffer.length);
         byte sum = sum(cmdSeqDataBuffer);
-        //Log.d(TAG, "Sum by user: "+sum);
-        //Log.d(TAG, "Sum is received: "+dataSum);
+        System.out.println( "Sum by user: "+sum);
+        System.out.println( "Sum is received: "+dataSum);
         if(Math.abs(dataSize) != Math.abs(dataSizeSum)){
-            //Log.e(TAG, "Can not parse due to DataSize is not equal with Data Size Sum");
+            System.out.println( "Can not parse due to DataSize is not equal with Data Size Sum");
             return false;
         }
         if((cmdSeqDataBuffer.length != Math.abs(dataSize))) {
-            //Log.e(TAG, "Data Size is not equal with size of data size");
+            System.out.println( "Data Size is not equal with size of data size");
             return false;
         }
         if(Math.abs(sum) != Math.abs(dataSum)) {
-            //Log.e(TAG, "Can not parse due to Data Size incorrectly");
+            System.out.println( "Can not parse due to Data Size incorrectly");
             return false;
         }
         return true;

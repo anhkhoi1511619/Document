@@ -1,6 +1,6 @@
 import java.io.ByteArrayOutputStream;
 
-public class StopStation extends TrainCommPackageDTO {
+public class StopStation extends CommPackageDTO {
     int stopSeq;
     int operationNum;
 

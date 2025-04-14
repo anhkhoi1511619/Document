@@ -4,11 +4,13 @@ import java.util.HashMap;
 public class MainFactory implements SendFactory {
     StopStation stopStation = new StopStation(); // CẦN khởi tạo
 
-    Send stopStation(int command, int sequence, HashMap bundle) {
+    CommPackageDTO stopStation(int command, int sequence, HashMap bundle) {
         if (bundle == null) bundle = new HashMap();
         stopStation.stopSeq = (int) bundle.getOrDefault("stopSeq", 0);
+        int currentOperationNum = 9;
         try {
-            stopStation.operationNum = (int) bundle.getOrDefault("operationNum", 0);
+            int ret = (int)bundle.getOrDefault("operationNum", currentOperationNum);
+            stopStation.operationNum =  (ret < 0) ? currentOperationNum : ret;
         } catch (Exception e) {
         }
         stopStation.setCommand(command);
@@ -18,8 +20,8 @@ public class MainFactory implements SendFactory {
     }
 
     @Override
-    public Send fill(int command, int sequence, HashMap obj) {
-        return stopStation(command, sequence, (HashMap) obj);
+    public byte[] fill(int command, int sequence, HashMap obj) {
+        return stopStation(command, sequence, (HashMap) obj).serialize();
     }
 }
 
