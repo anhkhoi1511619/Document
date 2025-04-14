@@ -1,9 +1,10 @@
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.net.InetSocketAddress;
+import java.net.BindException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.concurrent.Callable;
@@ -13,35 +14,25 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 
-
 public class ServerController {
     static final String TAG_SERVER = "CONNECT_SERVER_SUB";
       public static void main(String[] args) {
             System.out.println("Hello World");
-            var sc = new ServerController(52101);
-            Executors.newScheduledThreadPool(10).scheduleAtFixedRate(() -> {
-                sc.executeSyncReceive();
-            },100, 100, TimeUnit.MILLISECONDS);
+            var sc = new ServerController(52102);
+            //sc.handleHandShake();
+            while (true)
+            {
+                try {
+                    //if (sc.isHandShake())sc.receive();
+                    sc.executeSyncReceive();
+                    Thread.sleep (100);
+                } catch (InterruptedException e)
+                {
+                   System.out.println("Exception: "+e);
+                }
+            }
       }
       
-    public enum DataStatus {
-        UNKNOWN,
-        SENDING,
-        SEND_DONE,
-        RECEIVING,
-        RECEIVE_DONE;
-    }
-    
-    public enum ConnectionStatus {
-        CONNECTING,
-        RESET_CONNECT,
-        CONNECTED,
-        CONNECT_FAIL,
-        CLOSED,
-        UNKNOWN
-    }
-  
-
     public ServerController(int port) {
         this.port = port;
         var now = new Date();
@@ -52,9 +43,6 @@ public class ServerController {
 
     public void doClose() {
         close();
-    }
-    public void reopen() {
-        asyncReopen();
     }
     //------------------ This is library, please contact to Email:khoi.nguyen.ts.lecip.jp
     // if having bug or want to maintenance---------------------//
@@ -87,42 +75,20 @@ public class ServerController {
     void open() {
         try {
             System.out.println( "Opening socket at ( Port: "+port+ ")");
-            serverSocket = new ServerSocket();
-            serverSocket.setReuseAddress(true);
-            serverSocket.setSoTimeout(10000);
+            serverSocket = new ServerSocket(port);
+            serverSocket.setSoTimeout(100000);
             serverSocket.setReceiveBufferSize(13000);
-            serverSocket.bind(new InetSocketAddress(port));
             socket = null;
             System.out.println( "Server is preparing to communication with port " + port);
             System.out.println("Opening server socket at ( Port: "+port+
                     ") with bound: "+serverSocket.isBound()+
                     " closed: "+serverSocket.isClosed());
             connectionStatus = ConnectionStatus.CONNECTED;
-        // }
-        // catch (BindException e) {
-        //     System.out.println( "Server is having error.... with port " + port + " detail error "+ e);
-        //     e.printStackTrace();
-        //     connectionStatus = ConnectionStatus.CONNECT_FAIL;
-        //     if (!isPortInUse(port)) {
-        //         System.out.println("Server started on port " + port);
-        //     } else {
-        //         System.out.println("Port " + port + " is already in use. Reusing existing connection.");
-        //         close();
-        //         open();
-        //     }
-        } catch (IOException e) {
+        }    
+         catch (IOException e) {
             System.out.println( "Server is having error.... with port " + port + " detail error "+ e);
             e.printStackTrace();
             connectionStatus = ConnectionStatus.CONNECT_FAIL;
-        } 
-    }
-
-    public boolean isPortInUse(int port) {
-        try (Socket tmpsocket = new Socket("localhost", port)) {
-            socket = tmpsocket;
-            return true; // Nếu kết nối thành công, nghĩa là cổng đang có server chạy
-        } catch (IOException e) {
-            return false; // Nếu không kết nối được, nghĩa là cổng chưa dùng
         }
     }
     boolean isHandShake = false;
@@ -147,14 +113,8 @@ public class ServerController {
             }
         } catch (IOException e) {
             System.out.println( "Error while  waiting for handshaking with client at port "+port+": "+e.getMessage());
+            handShake();
         }
-    }
-    void asyncReopen() {
-        connectionStatus = ConnectionStatus.CONNECTING;
-        executorServiceForSocketServer.submit(() -> {
-            close();
-            open();
-        });
     }
     DataStatus dataStatus;
 
@@ -174,52 +134,66 @@ public class ServerController {
         }
         return data;
     }
+    
+    
+    int failCount = 0;
     byte[] receive() {
         boolean isHandShake = false;
         dataStatus = DataStatus.UNKNOWN;
         byte[] emptyData = new byte[]{0};
-        if(serverSocket == null ) return emptyData;
+        if(serverSocket == null ) {
+            System.out.println( "Server Socket is null");
+            return emptyData;
+        }
+         //if (!isHandShake) {
+         //   System.out.println( "Waiting for handshaking, Skip receive data");
+         //   return emptyData;
+         //}
         try {
             if(serverSocket.isClosed()) {
                 System.out.println( "Server Socket is closed");
-//                throw new RuntimeException("Server Socket is closed");
+                throw new RuntimeException("Server Socket is closed");
             }
             final int BUFFER_SIZE = 1024;
             byte[] buffer = new byte[BUFFER_SIZE];
             int size = 0;
-            //System.out.println( "Server is waiting for connecting with port"+port);
-            if(socket != null && socket.getInputStream().available() > 0) {
-                System.out.println( "Server Input stream of socket is available ");
+            if(socket != null && socket.getInputStream().available() > 0) {// Network 
+                //throw new RuntimeException("Server Input stream of socket is unavailable");
                 isHandShake = true;
-            }
+            } 
+            failCount = 0;
             serverSocket.setSoTimeout(10);
-
-            if(!isHandShake){
-                System.out.println( "Server is waiting for handshaking with client at port "+port);
-                socket = serverSocket.accept();
-            //    return emptyData;
-           }
+             if (!isHandShake)
+             {
+                System.out.println( "Server Input stream of socket is unavailable");
+                socket = serverSocket.accept(); 
+             }
             if(socket != null) {
                 if(socket.isClosed()) {
                     System.out.println( "Socket is closed");
-//                    throw new RuntimeException("Socket is closed");
+                    throw new RuntimeException("Socket is closed");
                 }
             }
             dataStatus = DataStatus.RECEIVING;
-            System.out.println( "Server is connecting.... with port " + port);
             while (socket.getInputStream().available() > 0) {
                 size = socket.getInputStream().read(buffer);
             }
             byte[] rawData = Arrays.copyOfRange(buffer, 0, size);
-            System.out.println( "Server is read.... with length " + rawData.length + " data: " + Arrays.toString(rawData));
+            System.out.println( "Server is read.... with data " + rawData.length);
             dataStatus = DataStatus.RECEIVE_DONE;
             return rawData;
-        } catch (SocketTimeoutException exception) {
-            System.out.println( "Server is having error due to timeout "+exception+" port "+port);
-        } catch (IOException e) {
-            System.out.println( "Server is having error due to IO Stream "+e+" port "+port);
         } catch (Exception e) {
-            System.out.println( "Server is having unknown error.... port: " + port +" with detail error " + e);
+            System.out.println( "Server is having error "+ failCount + "times at port: " + port +" with detail error " + e);
+        } finally {
+                if(failCount++ == 20){
+                    System.out.println( "Server is forcely handshake again with client at port "+port);
+                    try {
+                        socket = serverSocket.accept();
+                    } catch (Exception e) {
+                        System.out.println( "Server is having unknown error.... port: " + port +" with detail error " + e +" at try-catch-finally()");
+                    }
+                    failCount = 0;
+                }
         }
         dataStatus = DataStatus.UNKNOWN;
         return emptyData;

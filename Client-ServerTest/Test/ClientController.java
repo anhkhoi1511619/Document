@@ -1,12 +1,10 @@
 
-
 import java.io.IOException;
 import java.net.NoRouteToHostException;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -18,37 +16,21 @@ public class ClientController {
     
     public static void main(String[] args) {
             System.out.println("Hello World");
-            var sc = new ClientController("127.0.0.1", 51002);
-            sc.setData(new byte[]{0x02, (byte)0x58, 0x00, 0x08, (byte)0xA0, (byte)0xF2, 0x00, 0x07, (byte)0xD0, 0x00, 0x00, 0x01, 0x00, 0x01, (byte)0xCB, 0x34, 0x03});
-            int count = 0;
-            while (true) { 
+            var sc = new ClientController("127.0.0.1", 52102);
+            while (true)
+            {
+                sc.setData (new byte[] {0x01, 0x02, 0x03});
+                //sc.setData (new byte[] {});
+                sc.send();
                 try {
-                    if (count++ >= 100) {
-                        sc.setData(new byte[]{});
-                    }
-                    sc.doSend();
-                    Thread.sleep(100);
-                } catch (Exception e) {
+                    Thread.sleep (100);
+                } catch (Exception e)
+                {
+                    System.out.println("Exception: "+e);
                 }
             }
     }
       
-    public enum DataStatus {
-        UNKNOWN,
-        SENDING,
-        SEND_DONE,
-        RECEIVING,
-        RECEIVE_DONE;
-    }
-    
-    public enum ConnectionStatus {
-        CONNECTING,
-        RESET_CONNECT,
-        CONNECTED,
-        CONNECT_FAIL,
-        CLOSED,
-        UNKNOWN
-    }
 
     public ClientController(String IP, int port) {
         //Constructor
@@ -63,18 +45,6 @@ public class ClientController {
     public void doClose() {
         close();
     }
-    /**
-     * タイムアウト設定を導入し、長時間待機を回避する仕組みを実装する
-     */
-    public void doSend() {
-        Future<?> future = executorServiceForSocket.submit(this::send);
-        try {
-            future.get(100, TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            System.out.println( "The polling interval of CLIENT(IP: "+IP+" Port: "+port+") is interrupted due to the total polling time exceeds 100ms, Exception: "+e);
-            future.cancel(true);
-        }
-    }
     public void setData(byte[] data) {
         this.data = data;
     }
@@ -83,7 +53,7 @@ public class ClientController {
     }
     //------------------ This is library, please contact to Email:khoi.nguyen.ts.lecip.jp
     // if having bug or want to maintenance---------------------//
-    static final ScheduledExecutorService executorServiceForSocket = Executors.newScheduledThreadPool(10);
+    final ScheduledExecutorService executorServiceForSocket = Executors.newScheduledThreadPool(10);
     byte[] data = new byte[] {1,2,3,4,5};
 
     //------------------ ↓↓↓Here will create socket↓↓↓---------------------//
@@ -127,7 +97,7 @@ public class ClientController {
             System.out.println( "Opening socket at (IP: " + IP + " Port: " + port + ")");
             connectionStatus = ConnectionStatus.CONNECTING;
             socket = new Socket(IP, port);
-            socket.setSoTimeout(10000);
+            socket.setSoTimeout(100000);
             System.out.println( "Socket opened " + socket.getRemoteSocketAddress());
             connectionStatus = ConnectionStatus.CONNECTED;
             System.out.println( "Opened socket at (IP: " + IP + " Port: " + port +
@@ -167,22 +137,27 @@ public class ClientController {
                 dataStatus = DataStatus.UNKNOWN;
                 System.out.println( "Client Socket is closing at" + socket.getRemoteSocketAddress() + ". Please wait for next step to reset client socket..");
                 //close();//current socket is having error.Remove strictly now
-                return;
+                throw new RuntimeException();
             }
+            failCount = 0;
             socket.setSoTimeout(0);
             socket.getOutputStream().write(data);
             socket.getOutputStream().flush();
             System.out.println( "Socket write " + Arrays.toString(data) + "  to address " + socket.getRemoteSocketAddress());
             dataStatus = DataStatus.SEND_DONE;
+            return;
         } catch (RuntimeException e) {
             System.out.println( "Client Socket is null at " + IP);
-            syncOpen();
-            dataStatus = DataStatus.UNKNOWN;
         } catch (IOException e) {
             System.out.println( "Error "+e+" while write data of client socket "+socket.getRemoteSocketAddress()+" at "+IP);
-            System.out.println( "Socket is restart at "+IP);
-            syncOpen();
-            dataStatus = DataStatus.UNKNOWN;
+        } finally {
+            if (failCount++ >= 20)
+            {
+                failCount = 0;
+                System.out.println( "Socket is forcely restart at "+IP+" with " +failCount +" times");
+                asyncReopen();
+                dataStatus = DataStatus.UNKNOWN;
+            }
         }
     }
     //------------------ ↓↓↓Here will close socket↓↓↓---------------------//
