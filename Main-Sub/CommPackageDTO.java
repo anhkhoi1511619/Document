@@ -69,18 +69,21 @@ public class CommPackageDTO {
         try {
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             byte[] dataBuffer = (data == null) ? new byte[]{} : data;//TODO: Maybe this is BUG
-            byte[] cmdSeqDataBuffer = new byte[dataBuffer.length+2];
+            System.out.println( "data: "+Arrays.toString(data));
+            byte[] cmdSeqDataBuffer = new byte[dataBuffer.length+1];
             cmdSeqDataBuffer[0] = (byte) command;
-            cmdSeqDataBuffer[1] = (byte) sequenceNum;
-            System.arraycopy(dataBuffer, 0, cmdSeqDataBuffer, 2, dataBuffer.length);
+            //cmdSeqDataBuffer[1] = (byte) sequenceNum;
+            System.arraycopy(dataBuffer, 0, cmdSeqDataBuffer, 1, dataBuffer.length);
+            System.out.println( "dataBuffer: "+Arrays.toString(cmdSeqDataBuffer));
             dataSize = (short) (cmdSeqDataBuffer.length);
-            dataSizeSum = sum(toBytes(dataSize,2));
+            dataSizeSum = (byte)(1 + ~(dataSize));
+            //dataSizeSum = sum(toBytes(dataSize,2));
             dataSum = sum(cmdSeqDataBuffer);
             stream.write(stx);
             stream.write(toBytes(dataSize,2));
             stream.write(dataSizeSum);
             stream.write(command);
-            stream.write(sequenceNum);
+            //stream.write(sequenceNum);
             if(data != null) stream.write(data);
             stream.write(dataSum);
             stream.write(etx);
@@ -107,9 +110,9 @@ public class CommPackageDTO {
         command = (ret[offset] & 0xFF);
         System.err.println( "command: "+command);
         offset++;
-        sequenceNum = ret[offset];
-        System.out.println( "sequenceNum: "+sequenceNum);
-        offset++;
+        //sequenceNum = ret[offset];
+        //System.out.println( "sequenceNum: "+sequenceNum);
+        //offset++;
         data = Arrays.copyOfRange(ret, offset, ret.length-2);
         System.out.println( "dataArr: "+Arrays.toString(data));
         dataSum = ret[ret.length-2];
@@ -128,10 +131,10 @@ public class CommPackageDTO {
             return false;
         }
         byte[] dataBuffer = (data==null) ? new byte[]{} : data;
-        byte[] cmdSeqDataBuffer = new byte[dataBuffer.length+2];
+        byte[] cmdSeqDataBuffer = new byte[dataBuffer.length+1];
         cmdSeqDataBuffer[0] = (byte) command;
-        cmdSeqDataBuffer[1] = (byte) sequenceNum;
-        System.arraycopy(dataBuffer, 0, cmdSeqDataBuffer, 2, dataBuffer.length);
+        //cmdSeqDataBuffer[1] = (byte) sequenceNum;
+        System.arraycopy(dataBuffer, 0, cmdSeqDataBuffer, 1, dataBuffer.length);
         System.out.println( "cmdSeqDataBuffer is prepared: "+Arrays.toString(cmdSeqDataBuffer));
         System.out.println( "Size of cmdSeqDataBuffer: "+cmdSeqDataBuffer.length);
         byte sum = sum(cmdSeqDataBuffer);

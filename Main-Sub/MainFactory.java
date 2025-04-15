@@ -8,11 +8,12 @@ public class MainFactory implements SendFactory {
         if (bundle == null) bundle = new HashMap();
         stopStation.stopSeq = (int) bundle.getOrDefault("stopSeq", 0);
         int currentOperationNum = 9;
-        try {
-            int ret = (int)bundle.getOrDefault("operationNum", currentOperationNum);
-            stopStation.operationNum =  (ret < 0) ? currentOperationNum : ret;
-        } catch (Exception e) {
-        }
+//        try {
+//            int ret = (int)bundle.getOrDefault("operationNum", currentOperationNum);
+//            stopStation.operationNum =  (ret < 0) ? currentOperationNum : ret;
+//        } catch (Exception e) {
+//        }
+        stopStation.operationNum = (int)bundle.getOrDefault("operationNum", currentOperationNum);
         stopStation.setCommand(command);
         stopStation.setSequenceNum(sequence);
 

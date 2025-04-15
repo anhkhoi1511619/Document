@@ -8,9 +8,9 @@ public class Test {
         var dto = new CommPackageDTO();
         var  factory = new MainFactory();
         var bundle = new HashMap<>();
-        bundle.put("stopSeq", 1);
-        bundle.put("operationNum", 2);
-        data = factory.fill(20, 1, bundle);
+        bundle.put("stopSeq", 0x03);
+        bundle.put("operationNum", 0xE8);
+        data = factory.fill(0x30, 1, bundle);
         
         System.out.println("Serialized: " + format(data));
 
@@ -22,8 +22,8 @@ public class Test {
         System.out.println("Data is correctly "+(dto.isCorrectData() ? "YES" : "NO"));
 
         bundle.put("stopSeq", 3);
-        bundle.put("operationNum", -1);
-        data = factory.fill(20, 2, bundle);
+        bundle.put("operationNum", 5);
+        data = factory.fill(0x20, 2, bundle);
         
         System.out.println("Serialized: " + format(data));
 
