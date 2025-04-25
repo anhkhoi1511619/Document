@@ -139,6 +139,33 @@ public class ConnectHelper
 		}
 		return false;
 	}
+
+	public GetURLResponse getURL(String url, String machineId)
+	{
+		GetURLRequest requestBody = new GetURLRequest();
+		requestBody.machineId = machineId;
+		RequestBody body = RequestBody.create(MEDIA_TYPE_JSON, requestBody.serialize().toString());
+		System.out.println("Request: " + requestBody);	
+		Request request = new Request.Builder()
+				.url(url)
+				.method("POST", body)
+				.addHeader("Content-Type", "application/json")
+				.build();
+		try (Response response = client.newCall(request).execute()) {
+            JSONObject object = new JSONObject(response.body().string());
+			GetURLResponse ret = new GetURLResponse();
+			ret.deserialize(object);
+			System.err.println("Received: " + ret);
+			response.close();
+			return ret;
+        }
+        catch (Exception e)
+        {
+			System.err.println("Exception: " + e);
+			
+		}
+		return new GetURLResponse();
+	}
 	
 	public void rideGetOff()
 	{
@@ -199,6 +226,7 @@ public class ConnectHelper
             return response.isSuccessful();
         } catch (IOException e) {
             System.out.println( "error while making upload request, " + e.getMessage());
+			e.printStackTrace();
         }
         return false;
     }

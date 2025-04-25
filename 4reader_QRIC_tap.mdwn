@@ -1,0 +1,94 @@
+### シーケンス図
+
+#### 乗降リーダとの制御器通信機能
+```plantuml
+@startuml
+
+actor "乗務員" as p
+actor "利用者1" as p1
+actor "利用者2" as p2
+actor "利用者3" as p3
+actor "利用者4" as p4
+database AWS as aws
+participant 制御器 as c
+participant 乗降リーダ1 as r1
+participant 乗降リーダ2 as r2
+participant 乗降リーダ3 as r3
+participant 乗降リーダ4 as r4
+
+
+alt QRコード、ICカード時
+	p1--->r1:  QRコード、ICカード
+	r1--->c:  QRデータ通知
+    c --> aws:リーダ1乗降処理API
+    c <-- aws:リーダ1乗降処理API RES
+    c->c:ロッカー①掛ける
+    activate c #FFBBBB
+        note left
+            設定マスタからの自動解除時間
+        endnote
+    c-->r1:接客表示要求
+    c<--r1:接客表示要求RES
+        note left
+            自動解除時間が経ってたら、ロッカー①解放される
+        endnote
+    c->c:ロッカー①解放された
+    deactivate c 
+    p2--->r2:  QRコード、ICカード
+	r2--->c:  QRデータ通知
+    c --> aws:リーダ2乗降処理API
+    p3--->r3:  QRコード、ICカード
+	r3--->c:  QRデータ通知
+    c --> aws:リーダ3乗降処理API
+    p4--->r4:  QRコード、ICカード
+	r4--->c:  QRデータ通知
+    c --> aws:リーダ4乗降処理API
+    c <-- aws:リーダ4乗降処理API RES
+    c->c:ロッカー④掛ける
+    activate c #AAAAAA
+        note left
+            設定マスタからの自動解除時間
+        endnote
+    c-->r4:接客表示要求
+    p--->r4:  扉閉信号を入力する
+    c-->r4:ステータス通知&要求
+    c<--r4:ステータス通知&要求RES
+    c-->r4 !!:扉閉接客表示&要求
+        note left
+            ロッカー④掛けっているので、
+            扉閉接客表示&要求を送信しません。
+        endnote
+    c<--r4:接客表示要求RES
+        note left
+            自動解除時間が経ってたら、ロッカー④解放される
+        endnote
+    c->c:ロッカー④解放された
+    deactivate c 
+    c <-- aws:リーダ2乗降処理API RES
+    c->c:ロッカー②掛ける
+    activate c #DDDDBB
+    c-->r2:接客表示要求
+    c<--r2:接客表示要求RES
+    c <-- aws:リーダ3乗降処理API RES
+    c->c:ロッカー③掛ける
+    activate c #EEEEAA
+    c-->r3:接客表示要求
+    c<--r3:接客表示要求RES
+    c->c:ロッカー③解放された
+    deactivate c 
+        note left
+            設定マスタからの自動解除時間
+        endnote
+        note left
+            自動解除時間が経ってたら、ロッカー③解放される
+        endnote
+    c->c:ロッカー②解放された
+        note left
+            自動解除時間が経ってたら、ロッカー②解放される
+        endnote
+    deactivate c 
+end
+
+@enduml
+
+```
