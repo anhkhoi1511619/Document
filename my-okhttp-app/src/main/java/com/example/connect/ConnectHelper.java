@@ -1,5 +1,6 @@
 package com.example.connect;
 
+import okio.Okio;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -13,6 +14,8 @@ import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.SocketTimeoutException;
+import java.net.URL;
+
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,6 +24,8 @@ import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.io.File;
+
 
 public class ConnectHelper
 {
@@ -30,6 +35,7 @@ public class ConnectHelper
 	final MediaType MT_GZIP = MediaType.parse("application/gzip");
 
 	OkHttpClient client;
+	OkHttpClient clientWithoutAuth;
 	final AccessTokenInterceptor tokenFetcher;
 	EventListener eventListener;
 	final ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
@@ -69,6 +75,9 @@ public class ConnectHelper
 		tokenFetcher = new AccessTokenInterceptor();
 		client = new OkHttpClient().newBuilder()
 									.addInterceptor(tokenFetcher)
+									.eventListener(eventListener)
+									.build();
+		clientWithoutAuth = new OkHttpClient().newBuilder()
 									.eventListener(eventListener)
 									.build();
     }
@@ -166,6 +175,32 @@ public class ConnectHelper
 		}
 		return new GetURLResponse();
 	}
+	public MasterListResponse masterListRes(String url, String machineId)
+	{
+		MasterListRequest requestBody = new MasterListRequest();
+		requestBody.machineId = machineId;
+		RequestBody body = RequestBody.create(MEDIA_TYPE_JSON, requestBody.serialize().toString());
+		System.out.println("Request: " + requestBody);	
+		Request request = new Request.Builder()
+				.url(url)
+				.method("POST", body)
+				.addHeader("Content-Type", "application/json")
+				.build();
+		try (Response response = client.newCall(request).execute()) {
+            JSONObject object = new JSONObject(response.body().string());
+			MasterListResponse ret = new MasterListResponse();
+			ret.deserialize(object);
+			System.err.println("Received: " + ret);
+			response.close();
+			return ret;
+        }
+        catch (Exception e)
+        {
+			System.err.println("Exception: " + e);
+			
+		}
+		return new MasterListResponse();
+	}
 	
 	public void rideGetOff()
 	{
@@ -227,6 +262,63 @@ public class ConnectHelper
         } catch (IOException e) {
             System.out.println( "error while making upload request, " + e.getMessage());
 			e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static String guessFileName(String urlString) {
+        try {
+            URL url = new URL(urlString);
+            String path = url.getPath();
+            if (path == null || path.isEmpty()) return "unknown";
+
+            String fileName = path.substring(path.lastIndexOf('/') + 1);
+
+            // Nếu không có tên file sau dấu "/", đặt tên mặc định
+            if (fileName.isEmpty()) {
+                return "download";
+            }
+
+            return fileName;
+        } catch (Exception e) {
+            return "download";
+        }
+    }
+
+	public boolean download(String url, String saveTo) {
+        if (url == null || !url.startsWith("http")) {
+            System.out.println( "DOWNLOAD, Link not start with http (" + url + "), skip");
+            return false;
+        }
+        try {
+            var filename = guessFileName(url);
+            System.out.println( "DOWNLOAD, file name = " + filename);
+            var dir = new File(saveTo);
+           	dir.mkdirs();
+            dir.setReadable(true, false);
+            dir.setWritable(true, false);
+            dir.setExecutable(true, false);
+            var file = new File(saveTo + "/" + filename);
+            file.setReadable(true, false);
+            file.setWritable(true, false);
+            var request = new Request.Builder().url(url).build();
+            var response = clientWithoutAuth.newCall(request).execute();
+            if (response.body() == null) {
+                return false;
+            }
+            var source = response.body().source();
+            var sink = Okio.buffer(Okio.sink(file));
+            var buffer = sink.getBuffer();
+            final int DOWNLOAD_CHUNK_SIZE = 8 * 1024;
+            while (source.read(buffer, DOWNLOAD_CHUNK_SIZE) != -1) {
+                sink.emit();
+            }
+            sink.flush();
+            sink.close();
+            source.close();
+            return true;
+        } catch (IOException e) {
+            System.out.println( "download failed " + e.getMessage());
         }
         return false;
     }

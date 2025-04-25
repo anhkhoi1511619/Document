@@ -3,6 +3,7 @@
 /home/khoinguyen/Projects/Java/my-okhttp-app/src/main/java/com/example/connect/final_class/ProductType.java
 /home/khoinguyen/Projects/Java/my-okhttp-app/src/main/java/com/example/connect/GetURLResponse.java
 /home/khoinguyen/Projects/Java/my-okhttp-app/src/main/java/com/example/connect/GetOffResponse.java
+/home/khoinguyen/Projects/Java/my-okhttp-app/src/main/java/com/example/connect/MasterListResponse.java
 /home/khoinguyen/Projects/Java/my-okhttp-app/src/main/java/com/example/connect/final_class/DiscountUsage.java
 /home/khoinguyen/Projects/Java/my-okhttp-app/src/main/java/com/example/connect/final_class/RideType.java
 /home/khoinguyen/Projects/Java/my-okhttp-app/src/main/java/com/example/connect/final_class/DiscountType.java
@@ -14,6 +15,7 @@
 /home/khoinguyen/Projects/Java/my-okhttp-app/src/main/java/com/example/connect/final_class/MediaType.java
 /home/khoinguyen/Projects/Java/my-okhttp-app/src/main/java/com/example/connect/final_class/PaymentType.java
 /home/khoinguyen/Projects/Java/my-okhttp-app/src/main/java/com/example/connect/ConnectHelper.java
+/home/khoinguyen/Projects/Java/my-okhttp-app/src/main/java/com/example/connect/MasterListRequest.java
 /home/khoinguyen/Projects/Java/my-okhttp-app/src/main/java/com/example/connect/final_class/AutoSetting.java
 /home/khoinguyen/Projects/Java/my-okhttp-app/src/main/java/com/example/connect/GetOffRequest.java
 /home/khoinguyen/Projects/Java/my-okhttp-app/src/main/java/com/example/connect/GetURLRequest.java
