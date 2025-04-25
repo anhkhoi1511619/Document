@@ -1,0 +1,64 @@
+### シーケンス図
+
+#### 乗降リーダとの制御器通信機能
+```plantuml
+@startuml
+
+actor "乗務員" as p
+actor "利用者1" as p1
+actor "利用者2" as p2
+actor "利用者3" as p3
+actor "利用者4" as p4
+database AWS as aws
+participant 制御器 as c
+participant メイン乗降リーダ as r1
+participant 乗降リーダ2 as r2
+participant 乗降リーダ3 as r3
+participant 乗降リーダ4 as r4
+
+
+alt タイムアウト不具合
+
+    p3--->r3: 1回目 QRコード、ICカード
+	r3--->c:  QRデータ通知
+    note right
+        リーダ画面に「しばらくお待ちください。」画面が
+        表示されている
+    endnote
+    c --> aws:リーダ3乗降処理API
+    c <-- aws:リーダ3乗降処理API RES
+    c->c:ロッカー③掛ける
+    activate c #DDDDBB
+        note left
+            設定マスタからの自動解除時間
+        endnote
+    c-->r2:接客表示要求
+    note right
+        リーダ画面に「しばらくお待ちください。」画面が
+        消える
+    endnote
+    c<--r2:接客表示要求RES
+    p3--->r3:2回目  QRコード、ICカード
+	r3--->c:  QRデータ通知
+    note right
+        リーダ画面に「しばらくお待ちください。」画面が
+        表示されている
+    endnote
+    c --> aws:リーダ3乗降処理API
+    c <-- aws:リーダ3乗降処理API RES
+    c-->r4 !!:サーバーのタイムアウトに関する接客表示&要求
+        note left
+            ロッカー④掛けているので、
+            サーバーのタイムアウトに関する接客表示&要求を送信しません。
+        endnote
+    c->c:ロッカー③解放された
+    deactivate c 
+        note left
+            リーダ画面に「しばらくお待ちください。」画面が
+            消えない
+        endnote
+end
+
+@enduml
+
+```

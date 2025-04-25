@@ -1,0 +1,89 @@
+### シーケンス図
+
+#### 乗降リーダとの制御器通信機能
+```plantuml
+@startuml
+
+actor "乗務員" as p
+actor "利用者1" as p1
+actor "利用者2" as p2
+actor "利用者3" as p3
+actor "利用者4" as p4
+database AWS as aws
+participant 制御器 as c
+participant メイン乗降リーダ as r1
+participant 乗降リーダ2 as r2
+participant 乗降リーダ3 as r3
+participant 乗降リーダ4 as r4
+
+
+alt 通常
+	p1--->r1:  QRコード、ICカード
+	r1--->c:  QRデータ通知
+    c --> aws:リーダ1乗降処理API
+    c <-- aws:リーダ1乗降処理API RES
+    note right
+        手動設定ボタン押下で優先的に送信する
+        ロッカー①掛けない
+    endnote
+    activate c #FFBBBB
+    c-->r1:接客表示要求
+    c<--r1:接客表示要求RES
+    deactivate c 
+
+    p2--->r2:  QRコード、ICカード
+	r2--->c:  QRデータ通知
+    c --> aws:リーダ2乗降処理API
+    c <-- aws:リーダ2乗降処理API RES
+    c->c:ロッカー②掛ける
+    activate c #AAAAAA
+        note left
+            設定マスタからの自動解除時間
+        endnote
+    c-->r2:接客表示要求
+    c<--r2:接客表示要求RES
+        note left
+            自動解除時間が経ってたら、ロッカー②解放される
+        endnote
+    c->c:ロッカー②解放された
+    deactivate c 
+
+
+    p3--->r3:  QRコード、ICカード
+	r3--->c:  QRデータ通知
+    c --> aws:リーダ3乗降処理API
+    c <-- aws:リーダ3乗降処理API RES
+    c->c:ロッカー③掛ける
+    activate c #DDDDBB
+        note left
+            設定マスタからの自動解除時間
+        endnote
+    c-->r3:接客表示要求
+    c<--r3:接客表示要求RES
+        note left
+            自動解除時間が経ってたら、ロッカー③解放される
+        endnote
+    c->c:ロッカー③解放された
+    deactivate c 
+
+    p4--->r4:  QRコード、ICカード
+	r4--->c:  QRデータ通知
+    c --> aws:リーダ4乗降処理API
+    c <-- aws:リーダ4乗降処理API RES
+    c->c:ロッカー④掛ける
+    activate c #EEEEAA
+        note left
+            設定マスタからの自動解除時間
+        endnote
+    c-->r4:接客表示要求
+    c<--r4:接客表示要求RES
+        note left
+            自動解除時間が経ってたら、ロッカー④解放される
+        endnote
+    c->c:ロッカー④解放された
+    deactivate c 
+end
+
+@enduml
+
+```

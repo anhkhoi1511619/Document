@@ -1,0 +1,92 @@
+### シーケンス図
+
+#### 乗降リーダとの制御器通信機能
+```plantuml
+@startuml
+
+actor "乗務員" as p
+actor "利用者1" as p1
+actor "利用者2" as p2
+actor "利用者3" as p3
+actor "利用者4" as p4
+database AWS as aws
+participant 制御器 as c
+participant メイン乗降リーダ as r1
+participant 乗降リーダ2 as r2
+participant 乗降リーダ3 as r3
+participant 乗降リーダ4 as r4
+
+
+alt 同時にQRコード、ICカードタッチ
+	p1--->r1:  QRコード、ICカード
+    p2--->r2:  QRコード、ICカード
+    p3--->r3:  QRコード、ICカード
+    p4--->r4:  QRコード、ICカード
+	r2--->c:  QRデータ通知
+    c->c:乗降リーダ②のQRデータ処理
+    activate c #FFBBBB
+    c --> aws:リーダ2乗降処理API
+    note left
+        非同期処理でサーバーに送信
+    endnote
+    deactivate c 
+	r1--->c:  QRデータ通知
+    c->c:乗降リーダ①のQRデータ処理
+    activate c #AAAAAA
+    c --> aws:リーダ1乗降処理API
+    deactivate c 
+    r4--->c:  QRデータ通知
+    c->c:乗降リーダ④のQRデータ処理
+    activate c #DDDDBB
+    c --> aws:リーダ4乗降処理API
+    deactivate c 
+	r3--->c:  QRデータ通知
+    c->c:乗降リーダ③のQRデータ処理
+    activate c #EEEEAA
+    c --> aws:リーダ3乗降処理API
+    deactivate c 
+    c <-- aws:リーダ2乗降処理API RES
+    note right
+        ロッカー②掛ける
+    endnote
+    c-->r2:接客表示要求
+    note right
+        同期処理で乗降リーダに一つ一つ送信
+    endnote
+    c<--r2:接客表示要求RES
+    c <-- aws:リーダ3乗降処理API RES
+    note right
+        ロッカー③掛ける
+    endnote
+    c-->r3:接客表示要求
+    c<--r3:接客表示要求RES
+    c <-- aws:リーダ1乗降処理API RES
+    note right
+        手動設定ボタン押下で優先的に送信する
+        ロッカー①掛けない
+    endnote
+    c-->r1:接客表示要求
+    c<--r1:接客表示要求RES
+    c <-- aws:リーダ4乗降処理API RES
+    note right
+        ロッカー④掛ける
+    endnote
+    c-->r4:接客表示要求
+    c<--r4:接客表示要求RES
+    c->c:ロッカー②解放された
+    note left
+        自動解除時間が経ってたら、ロッカー②解放される
+    endnote
+    c->c:ロッカー③解放された
+    note left
+        自動解除時間が経ってたら、ロッカー③解放される
+    endnote
+    c->c:ロッカー④解放された
+    note left
+        自動解除時間が経ってたら、ロッカー④解放される
+    endnote
+end
+
+@enduml
+
+```
