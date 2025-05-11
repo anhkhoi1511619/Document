@@ -43,7 +43,7 @@ public class AccessTokenInterceptor implements Interceptor {
      */
     public String loginAccessToken() {
         ConnectHelper helper = ConnectHelper.getInstance();
-        LoginResponse res = helper.login("http:192.168.254.249:5173/login", "123453456", "abcdxyz");
+        LoginResponse res = helper.login("http:192.168.10.104:5173/login", "123453456", "abcdxyz");
         return res.accessToken;
     }
 }

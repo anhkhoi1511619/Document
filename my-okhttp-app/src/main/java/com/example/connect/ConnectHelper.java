@@ -210,7 +210,7 @@ public class ConnectHelper
 		System.err.println("Request: " + requestData);
         
         Request request = new Request.Builder()
-            .url("http://192.168.65.104:5173/ride-getoff")
+            .url("http://192.168.10.104:5173/ride-getoff")
             .post(RequestBody.create(buffer, MT_BINARY))
             .build();
         try (Response response = client.newCall(request).execute()) {
