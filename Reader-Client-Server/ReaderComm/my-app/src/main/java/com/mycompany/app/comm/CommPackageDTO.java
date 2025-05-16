@@ -1,4 +1,6 @@
 package com.mycompany.app.comm;
+import com.mycompany.app.utils.*;
+
 
 public class CommPackageDTO {
 	private final int SUM_STRING_LENGTH = 2;

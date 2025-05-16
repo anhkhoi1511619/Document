@@ -1,5 +1,5 @@
 package com.mycompany.app.comm;
-
+import com.mycompany.app.utils.*;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
@@ -222,6 +222,11 @@ public class SendManager {
 					" bytes from " +
 					tcpConn.getSocket().getRemoteSocketAddress().toString() );
 			// ログ用文字を交換する
+
+			//TODO:TEST
+			// var data = new SocketDataProcessor("",0);
+			// data.dataAnalysis(rxBuf);
+			// System.err.println("rcvData: "+data.rcvData);
 		}
 		return true;
 	}

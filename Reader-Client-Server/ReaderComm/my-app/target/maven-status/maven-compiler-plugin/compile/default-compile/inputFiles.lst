@@ -1,5 +1,7 @@
 /home/khoinguyen/Projects/Java/Reader-Client-Server/ReaderComm/my-app/src/main/java/com/mycompany/app/App.java
 /home/khoinguyen/Projects/Java/Reader-Client-Server/ReaderComm/my-app/src/main/java/com/mycompany/app/comm/CommPackageDTO.java
 /home/khoinguyen/Projects/Java/Reader-Client-Server/ReaderComm/my-app/src/main/java/com/mycompany/app/comm/ConnectionManager.java
-/home/khoinguyen/Projects/Java/Reader-Client-Server/ReaderComm/my-app/src/main/java/com/mycompany/app/comm/DataTypeConverter.java
+/home/khoinguyen/Projects/Java/Reader-Client-Server/ReaderComm/my-app/src/main/java/com/mycompany/app/comm/RcvManager.java
 /home/khoinguyen/Projects/Java/Reader-Client-Server/ReaderComm/my-app/src/main/java/com/mycompany/app/comm/SendManager.java
+/home/khoinguyen/Projects/Java/Reader-Client-Server/ReaderComm/my-app/src/main/java/com/mycompany/app/comm/SocketDataProcessor.java
+/home/khoinguyen/Projects/Java/Reader-Client-Server/ReaderComm/my-app/src/main/java/com/mycompany/app/utils/DataTypeConverter.java

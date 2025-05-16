@@ -2,6 +2,8 @@ com/mycompany/app/comm/ConnectionManager.class
 com/mycompany/app/comm/SendManager$1.class
 com/mycompany/app/comm/CommPackageDTO.class
 com/mycompany/app/App.class
+com/mycompany/app/utils/DataTypeConverter.class
 com/mycompany/app/comm/SendManager.class
+com/mycompany/app/comm/SocketDataProcessor.class
 com/mycompany/app/comm/ConnectionManager$Config.class
-com/mycompany/app/comm/DataTypeConverter.class
+com/mycompany/app/comm/RcvManager.class

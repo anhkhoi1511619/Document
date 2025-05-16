@@ -9,6 +9,7 @@ public class App {
     public static void main(String[] args) {
             System.out.println("Hello World");
             int port = 51002;
+            new RcvManager ("192.168.254.45", 51002);
             while (true)
             {
                 var dto = new CommPackageDTO("02","03",0);
