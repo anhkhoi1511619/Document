@@ -30,25 +30,20 @@ public class RcvManager {
 					var os = socket.getOutputStream();
 					int size = 0;
 					int offset = 0;
+					final int BUFFER_SIZE = 1024;
+					byte[] buffer = new byte[BUFFER_SIZE];					
 					while (!Thread.currentThread().isInterrupted()) {
 						try {
-							System.out.println("Server Socket read for " + address + ":" + port);
-							byte[] trunk = new byte[50];
-							Arrays.fill(trunk,(byte) 0);
-							boolean firstTrunk = offset == 0;
-							var trunkSize = socket.getInputStream().read(trunk);
-							if(trunkSize <= 0) {
-								break;
-							}
-							System.out.println( "Server is read.... with size " + trunkSize);
 							while (socket.getInputStream().available() > 0) {
-								size = socket.getInputStream().read(data);
+								size = socket.getInputStream().read(buffer);
+							} 
+							if (size <= 0) continue;
+							byte[] rawData = Arrays.copyOfRange(buffer, 0, size);
+							System.out.println( "Server is read.... with size " + rawData.length + " data: ");
+							for(int i=0; i< rawData.length ; i++) {
+								System.out.print(rawData[i] +" ");
 							}
-							byte[] rawData = Arrays.copyOfRange(data, 0, size);
-							System.out.println( "Server is read.... with length " + rawData.length + " data: " + Arrays.toString(rawData));
-							System.out.println( "Server is read.... with size " + trunkSize);
-
-							//Thread.sleep(1000);
+							System.out.print("\n");
 						} catch (Exception e) {
 							System.out.println("Error while receiving data from reader-client side" + address + ":" + port + " - " + e.getMessage());
 						}
